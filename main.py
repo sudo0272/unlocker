@@ -10,7 +10,7 @@ print(r"| |_| | | | | | (_) | (__|   <  __/ |   ")
 print(r" \___/|_| |_|_|\___/ \___|_|\_\___|_|   ")
 print(r"                                        ")
 
-targetType = questionary.select(
+target_type = questionary.select(
     "Type of the target",
     choices=[
         "zip",
@@ -27,15 +27,15 @@ methods = questionary.checkbox(
     validate=lambda selected: True if len(selected) > 0 else "Please choose attack method"
 ).ask()
 
-minLength = questionary.text(
+min_length = questionary.text(
     "Minimum length of the password",
     validate=lambda text: True if re.match(r"^\d+$", text) and int(text) > 0 else "Please input number greater than 0"
 ).ask()
-minLength = int(minLength)
+min_length = int(min_length)
 
-maxLength = questionary.text(
+max_length = questionary.text(
     "Maximum length of the password (input nothing for infinity)",
-    validate=lambda text: True if (re.match(r"^\d+$", text) and int(text) >= minLength) or text == '' else "Please input number greater than minimum length or nothing"
+    validate=lambda text: True if (re.match(r"^\d+$", text) and int(text) >= min_length) or text == '' else "Please input number greater than minimum length or nothing"
 ).ask()
-maxLength = int(maxLength) if maxLength != '' else math.inf
+max_length = int(max_length) if max_length!= '' else math.inf
 
