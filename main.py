@@ -1,5 +1,6 @@
 import questionary
 import re
+import math
 
 print(r" _   _       _            _             ")
 print(r"| | | |     | |          | |            ")
@@ -36,5 +37,5 @@ maxLength = questionary.text(
     "Maximum length of the password (input nothing for infinity)",
     validate=lambda text: True if (re.match(r"^\d+$", text) and int(text) >= minLength) or text == '' else "Please input number greater than minimum length or nothing"
 ).ask()
-maxLength = int(maxLength) if maxLength != '' else 0
+maxLength = int(maxLength) if maxLength != '' else math.inf
 
