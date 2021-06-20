@@ -5,6 +5,9 @@ class PasswordProvider:
         self.min_length = min_length
         self.max_length = max_length
 
-    def generate(self) -> str:
+    def get_name(self) -> str:
+        pass
+
+    def generate(self) -> Generator[str, None, None]:
         pass
 
