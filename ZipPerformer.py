@@ -11,6 +11,9 @@ import questionary
 class ZipPerformer(FilePerformer):
     def __init__(self, password_providers: List[PasswordProvider]) -> None:
         super().__init__(password_providers)
+        self.target = None
+        self.output_directory = None
+        self.correct_password = None
 
     def equip(self) -> None:
         self.target = questionary.path(
@@ -26,8 +29,7 @@ class ZipPerformer(FilePerformer):
         ).ask()
 
     def unlock(self) -> Tuple[bool, Union[str, None], datetime.timedelta]:
-        is_unlocked: bool = False
-        correct_password: str = ""
+        self.correct_password = None
 
         start_time = datetime.datetime.now()
 
@@ -41,8 +43,7 @@ class ZipPerformer(FilePerformer):
                     try:
                         target_zip.extractall(self.output_directory, pwd=password.encode('utf8'))
 
-                        correct_password = password
-                        is_unlocked = True
+                        self.correct_password = password
 
                         break
 
@@ -50,10 +51,11 @@ class ZipPerformer(FilePerformer):
                         pass
 
                 spinner.stop()
-                if is_unlocked:
+
+                if self.correct_password is not None:
                     break
 
         end_time = datetime.datetime.now()
 
-        return is_unlocked, (correct_password if correct_password != "" else None), end_time - start_time
+        return self.correct_password, end_time - start_time
 

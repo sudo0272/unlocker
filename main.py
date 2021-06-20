@@ -92,10 +92,10 @@ if target_type == 'zip':
 
 performance_results = performer.perform()
 
-if performance_results[1][0]:
-    print(f"Unlocked successfully ({performance_results[1][2]} elapsed)")
-    print(f"Password: {performance_results[1][1]}")
+if performance_results[1][0] is not None:
+    print(f"Unlocked successfully ({performance_results[1][1]} elapsed)")
+    print(f"Password: {performance_results[1][0]}")
 
 else:
-    print("Unlocking failed ({performance_results[1][2]} elapsed)")
+    print("Unlocking failed ({performance_results[1][1]} elapsed)")
 

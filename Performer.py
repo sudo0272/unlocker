@@ -15,8 +15,8 @@ class Performer:
     def post_process(self) -> None:
         pass
 
-    def perform(self) -> List[Union[Tuple[bool, Union[str, None], datetime.timedelta], None]]:
-        results: List[Union[Tuple[bool, Union[str, None], datetime.timedelta], None]] = []
+    def perform(self) -> Tuple[None, Tuple[Union[str, None], datetime.timedelta], None]:
+        results = []
         results.append(self.equip())
         results.append(self.unlock())
         results.append(self.post_process())
