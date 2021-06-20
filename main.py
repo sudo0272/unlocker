@@ -7,6 +7,7 @@ from BruteForcePasswordProvider import BruteForcePasswordProvider
 from BruteForcePasswordValidator import BruteForcePasswordValidator
 from typing import List
 from ZipPerformer import ZipPerformer
+from PdfPerformer import PdfPerformer
 from Performer import Performer
 
 print(r" _   _       _            _             ")
@@ -21,6 +22,7 @@ target_type = questionary.select(
     "Type of the target",
     choices=[
         "zip",
+        "pdf"
         #  "wifi",
     ]
 ).ask()
@@ -90,26 +92,15 @@ performer: Performer = None
 if target_type == 'zip':
     performer = ZipPerformer(password_providers)
 
-print("--------- Equipment ---------")
-print("----------- Done ------------")
+if target_type == 'pdf':
+    performer = PdfPerformer(password_providers)
+
 performer.equip()
-print("--------- Unlocking ---------")
-print("----------- Done ------------")
 unlock_result = performer.unlock()
 
-# succeed
 if unlock_result[0] is not None:
-    print(f"Unlocked successfully ({unlock_result[1]} elapsed)")
-    print(f"Password: {unlock_result[0]}")
-
-    print("------ Post-processing ------")
     performer.post_process_succeed()
-    print("----------- Done ------------")
 
-# failed
 else:
-    print("Unlocking failed ({unlock_result[1]} elapsed)")
-    print("------ Post-processing ------")
     performer.post_process_failed()
-    print("----------- Done ------------")
 

@@ -1,4 +1,5 @@
 from FilePerformer import FilePerformer
+from Performer import show_unlock_spinner
 from typing import *
 from PasswordProvider import PasswordProvider
 from pathlib import Path
@@ -28,17 +29,12 @@ class ZipPerformer(FilePerformer):
             validate=lambda text: True if Path(text).is_dir() else "Please check the path"
         ).ask()
 
+    @show_unlock_spinner
     def unlock(self) -> Tuple[bool, Union[str, None], datetime.timedelta]:
-        self.correct_password = None
-
         start_time = datetime.datetime.now()
-
         # BUG: BadZipFile CRC-32 even for valid zip file
         with ZipFile(self.target, mode='r') as target_zip:
             for password_provider in self.password_providers:
-                spinner = Halo(text=f"Unlocking password with {password_provider.get_name()}", spinner="dots")
-                spinner.start()
-
                 for password in password_provider.generate():
                     try:
                         target_zip.extractall(self.output_directory, pwd=password.encode('utf8'))
@@ -49,8 +45,6 @@ class ZipPerformer(FilePerformer):
 
                     except (zlib.error, RuntimeError):
                         pass
-
-                spinner.stop()
 
                 if self.correct_password is not None:
                     break
