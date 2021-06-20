@@ -90,12 +90,26 @@ performer: Performer = None
 if target_type == 'zip':
     performer = ZipPerformer(password_providers)
 
-performance_results = performer.perform()
+print("--------- Equipment ---------")
+print("----------- Done ------------")
+performer.equip()
+print("--------- Unlocking ---------")
+print("----------- Done ------------")
+unlock_result = performer.unlock()
 
-if performance_results[1][0] is not None:
-    print(f"Unlocked successfully ({performance_results[1][1]} elapsed)")
-    print(f"Password: {performance_results[1][0]}")
+# succeed
+if unlock_result[0] is not None:
+    print(f"Unlocked successfully ({unlock_result[1]} elapsed)")
+    print(f"Password: {unlock_result[0]}")
 
+    print("------ Post-processing ------")
+    performer.post_process_succeed()
+    print("----------- Done ------------")
+
+# failed
 else:
-    print("Unlocking failed ({performance_results[1][1]} elapsed)")
+    print("Unlocking failed ({unlock_result[1]} elapsed)")
+    print("------ Post-processing ------")
+    performer.post_process_failed()
+    print("----------- Done ------------")
 

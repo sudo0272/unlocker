@@ -12,14 +12,9 @@ class Performer:
     def unlock(self) -> Tuple[bool, Union[str, None], datetime.timedelta]:
         pass
 
-    def post_process(self) -> None:
+    def post_process_succeed(self) -> None:
         pass
 
-    def perform(self) -> Tuple[None, Tuple[Union[str, None], datetime.timedelta], None]:
-        results = []
-        results.append(self.equip())
-        results.append(self.unlock())
-        results.append(self.post_process())
-
-        return results
+    def post_process_failed(self) -> None:
+        pass
 
