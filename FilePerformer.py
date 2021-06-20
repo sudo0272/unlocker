@@ -4,6 +4,7 @@ from PasswordProvider import PasswordProvider
 import questionary
 from typing import *
 from pathlib import Path
+from mimetypes import guess_type
 
 class FilePerformer(Performer):
     def __init__(self, password_providers: List[PasswordProvider]) -> None:
@@ -20,4 +21,7 @@ class FilePerformer(Performer):
             only_directories=True,
             validate=lambda text: True if Path(text).is_dir() else "Please check the path"
         ).ask()
+
+    def check_mimetype(self, target) -> bool:
+        return guess_type(target)[0] == self.mimetype
 

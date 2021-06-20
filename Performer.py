@@ -2,7 +2,6 @@ from PasswordProvider import PasswordProvider
 from typing import *
 import datetime
 from halo import Halo
-from mimetypes import guess_type
 
 class Performer:
     def __init__(self, password_providers: List[PasswordProvider]) -> None:
@@ -20,9 +19,6 @@ class Performer:
 
     def post_process_failed(self) -> None:
         pass
-
-    def check_mimetype(self, target) -> bool:
-        return guess_type(target)[0] == self.mimetype
 
 def show_unlock_spinner(func):
     def wrapper(*args):
