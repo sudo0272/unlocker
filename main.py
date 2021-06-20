@@ -5,10 +5,13 @@ import math
 from PasswordProvider import PasswordProvider
 from BruteForcePasswordProvider import BruteForcePasswordProvider
 from BruteForcePasswordValidator import BruteForcePasswordValidator
+from DictionaryPasswordProvider import DictionaryPasswordProvider
 from typing import List
 from ZipPerformer import ZipPerformer
 from PdfPerformer import PdfPerformer
 from Performer import Performer
+from pathlib import Path
+import mimetypes
 
 print(r" _   _       _            _             ")
 print(r"| | | |     | |          | |            ")
@@ -31,7 +34,7 @@ methods = questionary.checkbox(
     "Attack methods",
     choices=[
         "Brute force attack",
-        #  "Dictionary attack"
+        "Dictionary attack"
     ],
     validate=lambda selected: True if len(selected) > 0 else "Please choose attack method"
 ).ask()
@@ -49,6 +52,16 @@ max_length = questionary.text(
 max_length = int(max_length) if max_length != '' else math.inf
 
 password_providers: List[PasswordProvider] = []
+
+if "Dictionary attack" in methods:
+    dictionary_path = questionary.path(
+        "Dictionary path",
+        validate=lambda text: True if mimetypes.guess_type(text)[0] == "text/plain" else "Please check the path",
+        file_filter=lambda text: Path(text).is_dir() or mimetypes.guess_type(text)[0] == "text/plain"
+    ).ask()
+
+    password_providers.append(DictionaryPasswordProvider(min_length, max_length, dictionary_path))
+
 if "Brute force attack" in methods:
     brute_force_options = questionary.checkbox(
         "Brute force attack options",
