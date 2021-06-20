@@ -8,6 +8,7 @@ import questionary
 from typing import *
 import datetime
 from halo import Halo
+from mimetypes import guess_type
 
 class PdfPerformer(FilePerformer):
     def __init__(self, password_providers: List[PasswordProvider]) -> None:
@@ -15,18 +16,19 @@ class PdfPerformer(FilePerformer):
         self.target = None
         self.output_file = None
         self.correct_password = None
+        self.mimetype = "application/pdf"
 
     def equip(self) -> None:
         self.target = questionary.path(
             "Target pdf file",
-            validate=lambda text: True if Path(text).is_file() and text.split('.')[-1] == "pdf" else "Please check the path",
-            file_filter=lambda text: True if Path(text).is_dir() or (Path(text).is_file() and text.split('.')[-1] == "pdf") else False
+            validate=lambda text: True if self.check_mimetype(text) else "Please check the path",
+            file_filter=lambda text: True if Path(text).is_dir() or self.check_mimetype(text) else False
         ).ask()
 
         self.output_file = questionary.path(
             "Output file",
-            validate=lambda text: True if not Path(text).exists() else "Please check the path",
-            file_filter=lambda text: True if Path(text).is_dir() or (Path(text).is_file() and text.split('.')[-1] == "pdf") else False
+            validate=lambda text: True if not Path(text).is_dir() else "Please check the path",
+            file_filter=lambda text: True if Path(text).is_dir() or self.check_mimetype(text) else False
         ).ask()
 
     @show_unlock_spinner

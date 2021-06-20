@@ -41,13 +41,13 @@ methods = questionary.checkbox(
 
 min_length = questionary.text(
     "Minimum length of the password",
-    validate=lambda text: True if re.match(r"^\d+$", text) and int(text) > 0 else "Please input number greater than 0"
+    validate=lambda text: True if text.isnumeric() else "Please input number greater than 0"
 ).ask()
 min_length = int(min_length)
 
 max_length = questionary.text(
     "Maximum length of the password (input nothing for infinity)",
-    validate=lambda text: True if (re.match(r"^\d+$", text) and int(text) >= min_length) or text == '' else "Please input number greater than minimum length or nothing"
+    validate=lambda text: True if (text.isnumeric() and int(text) >= min_length) or text == '' else "Please input number greater than minimum length or nothing"
 ).ask()
 max_length = int(max_length) if max_length != '' else math.inf
 

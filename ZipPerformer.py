@@ -15,12 +15,13 @@ class ZipPerformer(FilePerformer):
         self.target = None
         self.output_directory = None
         self.correct_password = None
+        self.mimetype = "application/zip"
 
     def equip(self) -> None:
         self.target = questionary.path(
             "Target zip file",
-            validate=lambda text: True if Path(text).is_file() and text.split('.')[-1] == "zip" else "Please check the path",
-            file_filter=lambda text: True if Path(text).is_dir() or (Path(text).is_file() and text.split('.')[-1] == "zip") else False
+            validate=lambda text: True if self.check_mimetype(text) else "Please check the path",
+            file_filter=lambda text: True if Path(text).is_dir() or self.check_mimetype(text) else False
         ).ask()
 
         self.output_directory= questionary.path(
