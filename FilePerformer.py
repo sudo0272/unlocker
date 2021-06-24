@@ -7,8 +7,8 @@ from pathlib import Path
 from mimetypes import guess_type
 
 class FilePerformer(Performer):
-    def __init__(self, password_providers: List[PasswordProvider]) -> None:
-        super().__init__(password_providers)
+    def __init__(self, password_providers: List[PasswordProvider], numbers_password_provider_processes: List[int]) -> None:
+        super().__init__(password_providers, numbers_password_provider_processes)
 
     def equip(self) -> None:
         self.target = questionary.path(

@@ -52,6 +52,7 @@ max_length = questionary.text(
 max_length = int(max_length) if max_length != '' else math.inf
 
 password_providers: List[PasswordProvider] = []
+numbers_password_provider_process: List[int] = []
 
 if "Dictionary attack" in methods:
     dictionary_path = questionary.path(
@@ -61,6 +62,12 @@ if "Dictionary attack" in methods:
     ).ask()
 
     password_providers.append(DictionaryPasswordProvider(min_length, max_length, dictionary_path))
+
+    number_password_provider_process = int(questionary.text(
+        "Number of processes to assign",
+        validate=lambda text: True if text.isnumeric() else "Please input number"
+    ).ask())
+    numbers_password_provider_process.append(number_password_provider_process)
 
 if "Brute force attack" in methods:
     brute_force_options = questionary.checkbox(
@@ -101,12 +108,18 @@ if "Brute force attack" in methods:
 
     password_providers.append(BruteForcePasswordProvider(min_length, max_length, brute_force_pattern))
 
+    number_password_provider_process = int(questionary.text(
+        "Number of processes to assign",
+        validate=lambda text: True if text.isnumeric() else "Please input number"
+    ).ask())
+    numbers_password_provider_process.append(number_password_provider_process)
+
 performer: Performer = None
-if target_type == 'zip':
-    performer = ZipPerformer(password_providers)
+#  if target_type == 'zip':
+    #  performer = ZipPerformer(password_providers, numbers_password_provider_process)
 
 if target_type == 'pdf':
-    performer = PdfPerformer(password_providers)
+    performer = PdfPerformer(password_providers, numbers_password_provider_process)
 
 performer.equip()
 unlock_result = performer.unlock()

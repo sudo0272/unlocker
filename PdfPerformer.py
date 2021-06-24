@@ -9,13 +9,13 @@ from typing import *
 import datetime
 from halo import Halo
 from mimetypes import guess_type
+from multiprocessing import Pool
 
 class PdfPerformer(FilePerformer):
-    def __init__(self, password_providers: List[PasswordProvider]) -> None:
-        super().__init__(password_providers)
+    def __init__(self, password_providers: List[PasswordProvider], numbers_password_provider_processes: List[int]) -> None:
+        super().__init__(password_providers, numbers_password_provider_processes)
         self.target = None
         self.output_file = None
-        self.correct_password = None
         self.mimetype = "application/pdf"
 
     def equip(self) -> None:
@@ -31,26 +31,16 @@ class PdfPerformer(FilePerformer):
             file_filter=lambda text: True if Path(text).is_dir() or self.check_mimetype(text) else False
         ).ask()
 
-    @show_unlock_spinner
-    def unlock(self) -> Tuple[bool, Union[str, None], datetime.timedelta]:
-        start_time = datetime.datetime.now()
-        for password_provider in self.password_providers:
-            for password in password_provider.generate():
-                try:
-                    Pdf.open(self.target, password=password)
-                    self.correct_password = password
 
-                    break
+    def check_password(self, password: str) -> bool:
+        try:
+            Pdf.open(self.target, password=password)
+            self.correct_password = password
 
-                except pikepdf._qpdf.PasswordError:
-                    pass
+            return True
 
-            if self.correct_password is not None:
-                break
-
-        end_time = datetime.datetime.now()
-
-        return self.correct_password, end_time - start_time
+        except pikepdf._qpdf.PasswordError:
+            return False
 
     def post_process_succeed(self) -> None:
         spinner = Halo(text="Generating output file")
