@@ -2,7 +2,9 @@ from PasswordProvider import PasswordProvider
 from typing import *
 import datetime
 from halo import Halo
-from multiprocessing import Pool
+from multiprocessing import Pool, Event, Process, Value, Manager
+from ctypes import c_char_p
+from time import sleep
 
 def show_unlock_spinner(func):
     def wrapper(*args):
@@ -32,37 +34,51 @@ class Performer:
     def equip(self) -> None:
         pass
 
-    # ERROR: AssertionError: daemonic processes are not allowed to have children
     @show_unlock_spinner
     def unlock(self) -> Tuple[bool, Union[str, None], datetime.timedelta]:
+        # TODO: check if file is already unlocked
         start_time = datetime.datetime.now()
-        crack_pool = Pool(processes=2)
-        crack_results = crack_pool.imap_unordered(self.crack, zip(self.password_providers, self.numbers_password_provider_processes))
+        password_found_event = Event()
+        manager = Manager()
+        password = manager.Value(c_char_p, "")
 
-        for crack_result in crack_results:
-            if crack_result:
-                crack_pool.terminate()
-                break
+        crack_pool = [Process(target=self.crack, args=(self.password_providers[i], self.numbers_password_provider_processes[i], password_found_event, password)) for i in range(len(self.password_providers))]
 
-        crack_pool.join()
+        for process in crack_pool:
+            process.start()
 
+        password_found_event.wait()
+
+        for process in crack_pool:
+            process.join()
+
+        self.correct_password = password.value
         end_time = datetime.datetime.now()
 
         return self.correct_password, end_time - start_time
 
-    def crack(self, args) -> bool:
-        password_provider = args[0]
-        number_password_provider_processes = args[1]
-        check_password_pool = Pool(processes=number_password_provider_processes)
+    def crack(self, password_provider: list[PasswordProvider], number_password_provider_processes: list[int], password_found_event: Event, password: Value) -> None:
+        test_password_pool = Pool(processes=number_password_provider_processes)
 
-        check_password_results = check_password_pool.imap_unordered(self.check_password, password_provider.generate())
+        test_password_results = test_password_pool.imap_unordered(self.test_password, password_provider.generate())
 
-        for check_password_result in check_password_results:
-            if check_password_result:
-                check_password_pool.terminate()
+        for test_password_result in test_password_results:
+            if password_found_event.is_set():
                 break
 
-        check_password_pool.join()
+            if test_password_result[0]:
+                password.value = test_password_result[1]
+                password_found_event.set()
+
+                break
+
+        test_password_pool.terminate()
+        test_password_pool.join()
+
+    def test_password(self, password: str) -> [bool, str]:
+        is_password_correct = self.check_password(password)
+
+        return is_password_correct, password
 
     def check_password(self, password: str) -> bool:
         pass
