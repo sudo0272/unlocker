@@ -47,12 +47,12 @@ class Performer:
         for process in crack_pool:
             process.start()
 
-        password_found_event.wait()
-
         for process in crack_pool:
             process.join()
 
-        self.correct_password = password.value
+        if password.value != "":
+            self.correct_password = password.value
+
         end_time = datetime.datetime.now()
 
         return self.correct_password, end_time - start_time
