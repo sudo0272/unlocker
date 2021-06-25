@@ -57,11 +57,8 @@ class PdfPerformer(FilePerformer):
         try:
             target_pdf = Pdf.open(self.target, password=self.correct_password)
             output_pdf = Pdf.new()
-
             output_pdf.pages.extend(target_pdf.pages)
-
             output_pdf.save(self.output_file)
-
             spinner.succeed("Output file generated")
 
         except:
