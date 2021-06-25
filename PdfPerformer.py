@@ -1,7 +1,6 @@
 import pikepdf
 from pikepdf import Pdf
 from FilePerformer import FilePerformer
-from Performer import show_unlock_spinner
 from PasswordProvider import PasswordProvider
 from pathlib import Path
 import questionary
@@ -31,6 +30,15 @@ class PdfPerformer(FilePerformer):
             file_filter=lambda text: True if Path(text).is_dir() or self.check_mimetype(text) else False
         ).ask()
 
+    def has_password(self) -> bool:
+        try:
+            # try opening file without password
+            Pdf.open(self.target)
+
+            return False
+
+        except pikepdf._qpdf.PasswordError:
+            return True
 
     def check_password(self, password: str) -> bool:
         try:

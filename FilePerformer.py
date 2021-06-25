@@ -10,6 +10,8 @@ class FilePerformer(Performer):
     def __init__(self, password_providers: List[PasswordProvider], numbers_password_provider_processes: List[int]) -> None:
         super().__init__(password_providers, numbers_password_provider_processes)
 
+        self.messages["unlock"]["has_no_password"] = "Given file is not an encrypted file"
+
     def equip(self) -> None:
         self.target = questionary.path(
             "Target file",

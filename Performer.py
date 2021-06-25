@@ -1,28 +1,10 @@
 from PasswordProvider import PasswordProvider
 from typing import *
-import datetime
+from datetime import datetime
 from halo import Halo
 from multiprocessing import Pool, Event, Process, Value, Manager
 from ctypes import c_char_p
 from time import sleep
-
-def show_unlock_spinner(func):
-    def wrapper(*args):
-        spinner = Halo("Unlocking password")
-        spinner.start()
-
-        result = func(*args)
-
-        if result[0] is not None:
-            spinner.succeed(f"Password found: {result[0]} ({result[1]} elapsed)")
-
-        else:
-            spinner.fail(f"Password not found ({result[1]} elapsed)")
-
-        return result
-
-    return wrapper
-
 
 class Performer:
     def __init__(self, password_providers: List[PasswordProvider], numbers_password_provider_processes: List[int]) -> None:
@@ -30,14 +12,21 @@ class Performer:
         self.numbers_password_provider_processes = numbers_password_provider_processes
         self.mimetype = ""
         self.correct_password = None
+        self.messages = {
+            "unlock": {
+                "password_found": "Password found: {} ({} elapsed)",
+                "password_not_found": "Password not found ({} elapsed)",
+                "has_no_password": "It is already not encrypted"
+            }
+        }
 
     def equip(self) -> None:
         pass
 
-    @show_unlock_spinner
-    def unlock(self) -> Tuple[bool, Union[str, None], datetime.timedelta]:
-        # TODO: check if file is already unlocked
-        start_time = datetime.datetime.now()
+    def unlock(self) -> Union["password_found", "password_not_found", "has_no_password"]:
+        if not self.has_password():
+            return "has_no_password"
+
         password_found_event = Event()
         manager = Manager()
         password = manager.Value(c_char_p, "")
@@ -53,9 +42,10 @@ class Performer:
         if password.value != "":
             self.correct_password = password.value
 
-        end_time = datetime.datetime.now()
+            return "password_found"
 
-        return self.correct_password, end_time - start_time
+        else:
+            return "password_not_found"
 
     def crack(self, password_provider: list[PasswordProvider], number_password_provider_processes: list[int], password_found_event: Event, password: Value) -> None:
         test_password_pool = Pool(processes=number_password_provider_processes)
@@ -80,12 +70,38 @@ class Performer:
 
         return is_password_correct, password
 
-    def check_password(self, password: str) -> bool:
+    def has_password(self) -> bool:
         pass
+
+    def check_password(self, password: str) -> bool:
+        return True
 
     def post_process_succeed(self) -> None:
         pass
 
     def post_process_failed(self) -> None:
         pass
+
+    def perform(self) -> None:
+        self.equip()
+
+        spinner = Halo("Unlocking password")
+        spinner.start()
+        start_time = datetime.now()
+        unlock_result = self.unlock()
+        elapsed_time = datetime.now() - start_time
+
+        message = self.messages["unlock"][unlock_result]
+
+        if unlock_result == "password_found":
+            spinner.succeed(message.format(self.correct_password, elapsed_time))
+            self.post_process_succeed()
+
+        elif unlock_result == "password_not_found":
+            spinner.fail(message.format(elapsed_time))
+            self.post_process_failed()
+
+        elif unlock_result == "has_no_password":
+            spinner.fail(message.format(elapsed_time))
+            self.post_process_failed()
 

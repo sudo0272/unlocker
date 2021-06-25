@@ -121,12 +121,5 @@ performer: Performer = None
 if target_type == 'pdf':
     performer = PdfPerformer(password_providers, numbers_password_provider_process)
 
-performer.equip()
-unlock_result = performer.unlock()
-
-if unlock_result[0] is not None:
-    performer.post_process_succeed()
-
-else:
-    performer.post_process_failed()
+performer.perform()
 

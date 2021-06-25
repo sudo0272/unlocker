@@ -1,5 +1,4 @@
 from FilePerformer import FilePerformer
-from Performer import show_unlock_spinner
 from typing import *
 from PasswordProvider import PasswordProvider
 from pathlib import Path
@@ -30,7 +29,6 @@ class ZipPerformer(FilePerformer):
             validate=lambda text: True if Path(text).is_dir() else "Please check the path"
         ).ask()
 
-    @show_unlock_spinner
     def unlock(self) -> Tuple[bool, Union[str, None], datetime.timedelta]:
         start_time = datetime.datetime.now()
         # BUG: BadZipFile CRC-32 even for valid zip file
