@@ -4,7 +4,14 @@ from PasswordProvider import PasswordProvider
 class BruteForcePasswordProvider(PasswordProvider):
     def __init__(self, min_length, max_length, *args, **kargs) -> None:
         super().__init__(min_length, max_length)
-        self.pattern = args[0]
+        self.pattern = None
+        self.set_pattern(args[0])
+
+    def get_pattern(self) -> str:
+        return self.pattern
+
+    def set_pattern(self, pattern) -> None:
+        self.pattern = pattern
 
     def get_name(self) -> str:
         return "brute force attack"
@@ -16,29 +23,29 @@ class BruteForcePasswordProvider(PasswordProvider):
         i: int = 0
         candidates: List[str] = []
 
-        while i < len(self.pattern):
+        while i < len(self.get_pattern()):
             is_escaped = False
 
-            if self.pattern[i] == '\\':
+            if self.get_pattern()[i] == '\\':
                 is_escaped = True
                 i += 1
 
-            if is_escaped is False and self.pattern[i] == '-':
+            if is_escaped is False and self.get_pattern()[i] == '-':
                 is_ranged = True
 
             else:
                 if candidate == '':
-                    candidate = self.pattern[i]
+                    candidate = self.get_pattern()[i]
 
                 else:
                     if is_ranged:
-                        candidates.extend([chr(j) for j in range(ord(candidate), ord(self.pattern[i]) + 1)])
+                        candidates.extend([chr(j) for j in range(ord(candidate), ord(self.get_pattern()[i]) + 1)])
                         is_ranged = False
                         candidate = ''
 
                     else:
                         candidates.append(candidate)
-                        candidate = self.pattern[i]
+                        candidate = self.get_pattern()[i]
 
             i += 1
 
@@ -50,13 +57,13 @@ class BruteForcePasswordProvider(PasswordProvider):
 
         carry: bool = False
         update_index: int = 0
-        password_data: List[int] = [-1] + [0] * (self.min_length - 1)
-        password: List[str] = [candidates[0]] * self.min_length
+        password_data: List[int] = [-1] + [0] * (self.get_min_length()- 1)
+        password: List[str] = [candidates[0]] * self.get_min_length()
 
         while True:
             if carry:
                 if update_index == len(password_data):
-                    if len(password_data) < self.max_length:
+                    if len(password_data) < self.get_max_length():
                         password_data.append(-1)
                         password.append(candidates[0])
 

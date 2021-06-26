@@ -10,7 +10,7 @@ class Performer:
     def __init__(self, password_providers: List[PasswordProvider], numbers_password_provider_processes: List[int]) -> None:
         self.password_providers = password_providers
         self.numbers_password_provider_processes = numbers_password_provider_processes
-        self.mimetype = ""
+        self.target = None
         self.correct_password = None
         self.messages = {
             "unlock": {
@@ -19,6 +19,24 @@ class Performer:
                 "has_no_password": "It is already not encrypted"
             }
         }
+
+    def get_target(self) -> Any:
+        return self.target
+
+    def set_target(self, target: Any) -> None:
+        self.target = target
+
+    def get_correct_password(self) -> str:
+        return self.correct_password
+
+    def set_correct_password(self, correct_password: str) -> None:
+        self.correct_password = correct_password
+
+    def get_message(self, category: str, key: str) -> str:
+        return self.messages[category][key]
+
+    def set_message(self, category: str, key: str, value: str) -> None:
+        self.messages[category][key] = value
 
     def equip(self) -> None:
         pass
@@ -40,7 +58,7 @@ class Performer:
             process.join()
 
         if password.value != "":
-            self.correct_password = password.value
+            self.set_correct_password(password.value)
 
             return "password_found"
 
@@ -91,7 +109,7 @@ class Performer:
         unlock_result = self.unlock()
         elapsed_time = datetime.now() - start_time
 
-        message = self.messages["unlock"][unlock_result]
+        message = self.get_message("unlock", unlock_result)
 
         if unlock_result == "password_found":
             spinner.succeed(message.format(self.correct_password, elapsed_time))

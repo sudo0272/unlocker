@@ -13,22 +13,27 @@ from multiprocessing import Pool
 class PdfPerformer(FilePerformer):
     def __init__(self, password_providers: List[PasswordProvider], numbers_password_provider_processes: List[int]) -> None:
         super().__init__(password_providers, numbers_password_provider_processes)
-        self.target = None
         self.output_file = None
         self.mimetype = "application/pdf"
 
+    def get_output_file(self) -> Path:
+        return self.output_file
+
+    def set_output_file(self, output_file) -> None:
+        self.output_file = output_file
+
     def equip(self) -> None:
-        self.target = questionary.path(
+        self.set_target(questionary.path(
             "Target pdf file",
             validate=lambda text: True if self.check_mimetype(text) else "Please check the path",
             file_filter=lambda text: True if Path(text).is_dir() or self.check_mimetype(text) else False
-        ).ask()
+        ).ask())
 
-        self.output_file = questionary.path(
+        self.set_output_file(questionary.path(
             "Output file",
             validate=lambda text: True if not Path(text).is_dir() else "Please check the path",
             file_filter=lambda text: True if Path(text).is_dir() or self.check_mimetype(text) else False
-        ).ask()
+        ).ask())
 
     def has_password(self) -> bool:
         try:
@@ -43,7 +48,6 @@ class PdfPerformer(FilePerformer):
     def check_password(self, password: str) -> bool:
         try:
             Pdf.open(self.target, password=password)
-            self.correct_password = password
 
             return True
 
@@ -55,10 +59,10 @@ class PdfPerformer(FilePerformer):
         spinner.start()
 
         try:
-            target_pdf = Pdf.open(self.target, password=self.correct_password)
+            target_pdf = Pdf.open(self.get_target(), password=self.correct_password)
             output_pdf = Pdf.new()
             output_pdf.pages.extend(target_pdf.pages)
-            output_pdf.save(self.output_file)
+            output_pdf.save(self.get_output_file())
             spinner.succeed("Output file generated")
 
         except:
