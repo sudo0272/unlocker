@@ -5,6 +5,9 @@ class PasswordProvider:
         self.set_min_length(min_length)
         self.set_max_length(max_length)
 
+    def equip(self) -> None:
+        pass
+
     def get_min_length(self) -> int:
         return self.min_length
 

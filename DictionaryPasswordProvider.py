@@ -1,11 +1,21 @@
 from PasswordProvider import PasswordProvider
 from pathlib import Path
+from mimetypes import guess_type
+import questionary
 
 class DictionaryPasswordProvider(PasswordProvider):
     def __init__(self, min_length, max_length, *args, **kargs) -> None:
         super().__init__(min_length, max_length)
         self.dictionary_path = None
-        self.set_dictionary_path(args[0])
+
+    def equip(self) -> None:
+        dictionary_path = questionary.path(
+            "Dictionary path",
+            validate=lambda text: True if guess_type(text)[0] == "text/plain" else "Please check the path",
+            file_filter=lambda text: Path(text).is_dir() or guess_type(text)[0] == "text/plain"
+        ).ask()
+
+        self.set_dictionary_path(dictionary_path)
 
     def get_dictionary_path(self) -> Path:
         return self.dictionary_path

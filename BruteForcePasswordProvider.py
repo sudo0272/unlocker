@@ -1,11 +1,54 @@
 from typing import *
 from PasswordProvider import PasswordProvider
+from BruteForcePasswordValidator import BruteForcePasswordValidator
+import questionary
+from questionary import Choice
+from enum import Flag, auto
+from BruteForceOption import BruteForceOption
 
 class BruteForcePasswordProvider(PasswordProvider):
     def __init__(self, min_length, max_length, *args, **kargs) -> None:
         super().__init__(min_length, max_length)
         self.pattern = None
-        self.set_pattern(args[0])
+
+    def equip(self) -> None:
+        options = questionary.checkbox(
+            "Brute force attack options",
+            choices=[
+                Choice("Uppercase letters", value=BruteForceOption.UPPER_CASE),
+                Choice("Lowercase letters", value=BruteForceOption.LOWER_CASE),
+                Choice("Numbers", value=BruteForceOption.NUMBER),
+                Choice("Special Characters", value=BruteForceOption.SPECIAL_CHARACTER),
+                Choice("Space", value=BruteForceOption.SPACE),
+                Choice("Custom", value=BruteForceOption.CUSTOM)
+            ],
+            validate=lambda selected: True if len(selected) > 0 else "Please check at least one option"
+        ).ask()
+
+        pattern: str = ""
+
+        if BruteForceOption.UPPER_CASE in options:
+            pattern += "A-Z"
+
+        if BruteForceOption.LOWER_CASE in options:
+            pattern += "a-z"
+
+        if BruteForceOption.NUMBER in options:
+            pattern += "0-9"
+
+        if BruteForceOption.SPECIAL_CHARACTER in options:
+            pattern += "!-/:-@[-`{-~"
+
+        if BruteForceOption.SPACE in options:
+            pattern += " "
+
+        if BruteForceOption.CUSTOM in options:
+            pattern += questionary.text(
+                "Custom brute force attack options",
+                validate=BruteForcePasswordValidator
+            ).ask()
+
+        self.set_pattern(pattern)
 
     def get_pattern(self) -> str:
         return self.pattern

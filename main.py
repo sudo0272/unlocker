@@ -12,6 +12,7 @@ from PdfPerformer import PdfPerformer
 from Performer import Performer
 from pathlib import Path
 import mimetypes
+from AttackMethod import AttackMethod
 
 print(r" _   _       _            _             ")
 print(r"| | | |     | |          | |            ")
@@ -33,8 +34,8 @@ target_type = questionary.select(
 methods = questionary.checkbox(
     "Attack methods",
     choices=[
-        "Brute force attack",
-        "Dictionary attack"
+        Choice("Brute force attack", AttackMethod.BRUTE_FORCE),
+        Choice("Dictionary attack", AttackMethod.DICTIONARY)
     ],
     validate=lambda selected: True if len(selected) > 0 else "Please choose attack method"
 ).ask()
@@ -54,65 +55,19 @@ max_length = int(max_length) if max_length != '' else math.inf
 password_providers: List[PasswordProvider] = []
 numbers_password_provider_process: List[int] = []
 
-if "Dictionary attack" in methods:
-    dictionary_path = questionary.path(
-        "Dictionary path",
-        validate=lambda text: True if mimetypes.guess_type(text)[0] == "text/plain" else "Please check the path",
-        file_filter=lambda text: Path(text).is_dir() or mimetypes.guess_type(text)[0] == "text/plain"
-    ).ask()
+for method in methods:
+    if method == AttackMethod.BRUTE_FORCE:
+        password_providers.append(BruteForcePasswordProvider(min_length, max_length))
 
-    password_providers.append(DictionaryPasswordProvider(min_length, max_length, dictionary_path))
+    elif method == AttackMethod.DICTIONARY:
+        password_providers.append(DictionaryPasswordProvider(min_length, max_length))
 
-    number_password_provider_process = int(questionary.text(
-        "Number of processes to assign",
+for password_provider in password_providers:
+    password_provider.equip()
+    numbers_password_provider_process.append(int(questionary.text(
+        f"Number of processes to assign for {password_provider.get_name()}",
         validate=lambda text: True if text.isnumeric() else "Please input number"
-    ).ask())
-    numbers_password_provider_process.append(number_password_provider_process)
-
-if "Brute force attack" in methods:
-    brute_force_options = questionary.checkbox(
-        "Brute force attack options",
-        choices=[
-            Choice("Uppercase letters", value="A"),
-            Choice("Lowercase letters", value="a"),
-            Choice("Numbers", value="1"),
-            Choice("Special Characters", value="!"),
-            Choice("Space", value="s"),
-            Choice("Custom", value="custom")
-        ],
-        validate=lambda selected: True if len(selected) > 0 else "Please check at least one option"
-    ).ask()
-
-    brute_force_pattern: str = ""
-
-    if "A" in brute_force_options:
-        brute_force_pattern += "A-Z"
-
-    if "a" in brute_force_options:
-        brute_force_pattern += "a-z"
-
-    if "1" in brute_force_options:
-        brute_force_pattern += "0-9"
-
-    if "!" in brute_force_options:
-        brute_force_pattern += "!-/:-@[-`{-~"
-
-    if "s" in brute_force_options:
-        brute_force_pattern += " "
-
-    if "custom" in brute_force_options:
-        brute_force_pattern += questionary.text(
-            "Custom brute force attack options",
-            validate=BruteForcePasswordValidator
-        ).ask()
-
-    password_providers.append(BruteForcePasswordProvider(min_length, max_length, brute_force_pattern))
-
-    number_password_provider_process = int(questionary.text(
-        "Number of processes to assign",
-        validate=lambda text: True if text.isnumeric() else "Please input number"
-    ).ask())
-    numbers_password_provider_process.append(number_password_provider_process)
+    ).ask()))
 
 performer: Performer = None
 #  if target_type == 'zip':
