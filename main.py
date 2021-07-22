@@ -14,6 +14,7 @@ from pathlib import Path
 import mimetypes
 from AttackMethod import AttackMethod
 from TargetType import TargetType
+from StringPerformer import StringPerformer
 
 print(r" _   _       _            _             ")
 print(r"| | | |     | |          | |            ")
@@ -26,9 +27,9 @@ print(r"                                        ")
 target_type = questionary.select(
     "Type of the target",
     choices=[
-        Choice("zip", TargetType.ZIP),
-        Choice("pdf", TargetType.PDF)
-        #  "wifi",
+        #  Choice("zip", TargetType.ZIP),
+        Choice("pdf", TargetType.PDF),
+        Choice("string", TargetType.STRING)
     ]
 ).ask()
 
@@ -76,6 +77,9 @@ performer: Performer = None
 
 if target_type == TargetType.PDF:
     performer = PdfPerformer(password_providers, numbers_password_provider_process)
+
+elif target_type == TargetType.STRING:
+    performer = StringPerformer(password_providers, numbers_password_provider_process)
 
 performer.perform()
 
