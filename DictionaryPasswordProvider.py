@@ -28,7 +28,7 @@ class DictionaryPasswordProvider(PasswordProvider):
 
     def generate(self):
         with open(self.get_dictionary_path(), 'r') as dictionary:
-            for raw_password in dictionary.readlines():
+            while (raw_password := dictionary.readline()) != '':
                 password = raw_password.rstrip()
 
                 if self.get_min_length() <= len(password) <= self.get_max_length():
